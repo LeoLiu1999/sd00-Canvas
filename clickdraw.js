@@ -1,7 +1,8 @@
 var c = document.getElementById("slate");
 var toggleButton = document.getElementById("toggle");
-var clearButton = document.getElementById("clear");
-var toggle = true;
+var clearButton  = document.getElementById("clear");
+var toggleStatus = document.getElementById("toggleStatus");
+var toggle = 0;
 
 var ctx = c.getContext("2d");
 
@@ -25,14 +26,13 @@ var checkerboard = function(){
     }
 }
 
-
 var drawCircle = function(x, y){
     console.log(x);
     console.log(y);
 
     ctx.beginPath();
 
-    ctx.arc(x-10, y-10, 10, 0, 2*Math.PI);
+    ctx.arc(x, y, 10, 0, 2*Math.PI);
     ctx.stroke();
     ctx.fill();
 }
@@ -41,24 +41,66 @@ var drawSquare = function(x, y){
     console.log(x);
     console.log(y);
 
-    ctx.fillRect(x-20, y-20, 20, 20);    
+    ctx.fillRect(x-10, y-10, 20, 20);    
+}
+
+
+var pathStarted = false;
+
+var drawDot = function(x, y){
+    var radius = 10;
+    ctx.moveTo(x + radius,y); //jump straight to the starting point of the arc
+    ctx.arc(x, y, radius, 0, 2*Math.PI);
+    ctx.fill();
+    ctx.stroke();
+    ctx.moveTo(x, y);
+}
+
+var drawLine = function(x, y){
+    if (pathStarted){
+	pathStarted = true;
+	ctx.beginPath();
+	ctx.moveTo(x, y);
+    } else {
+	ctx.lineTo(x, y);
+	ctx.stroke();
+    }
+}
+
+var clear = function(){
+    pathStarted = false;
+    ctx.beginPath();
+    ctx.clearRect(0, 0, 600, 600);
 }
 
 var draw = function(e){
     ctx.fillStyle = "#000000";
-    if (toggle){
-	drawSquare(e.x, e.y);
-    } else {
-	drawCircle(e.x, e.y);
+    if (toggle == 0)
+	drawCircle(e.offsetX, e.offsetY);
+    if (toggle == 1)
+	drawSquare(e.offsetX, e.offsetY);
+    if (toggle == 2){
+	ctx.fillStyle = "#0000ff";
+	drawLine(e.offsetX, e.offsetY);
+	drawDot(e.offsetX, e.offsetY);
+	ctx.moveTo(e.offsetX, e.offsetY);
     }
 }
 
 var toggleFunc = function(){
-    toggle = !(toggle);
-}
-
-var clear = function(){
-    ctx.clearRect(0, 0, 600, 600);
+    if(toggle == 2){
+	toggle = 0;
+	toggleStatus.innerHTML = "Circles";
+    } else if(toggle == 0){
+	toggle = 1;
+	toggleStatus.innerHTML = "Squares";
+    } else if(toggle == 1){
+	toggle = 2;
+	toggleStatus.innerHTML = "Connect the dots";
+	pathStarted = false;
+	ctx.beginPath();
+    }
+    console.log(toggle);
 }
 
 c.addEventListener("click", draw);
